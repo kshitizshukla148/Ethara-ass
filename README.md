@@ -111,11 +111,13 @@ Auth:
 Projects:
 - `GET /api/projects` (protected)
 - `POST /api/projects` (protected, admin)
+- `DELETE /api/projects/:id` (protected, admin)
 
 Tasks:
 - `GET /api/tasks` (protected)
 - `POST /api/tasks` (protected)
 - `PUT /api/tasks/:id` (protected, admin or assignee)
+- `DELETE /api/tasks/:id` (protected, admin)
 
 Dashboard:
 - `GET /api/dashboard` (protected)

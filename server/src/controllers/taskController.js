@@ -75,4 +75,20 @@ const updateTask = async (req, res, next) => {
   }
 };
 
-module.exports = { createTask, getTasks, updateTask };
+const deleteTask = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    await Task.findByIdAndDelete(id);
+
+    return res.json({ message: "Task deleted" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createTask, deleteTask, getTasks, updateTask };
