@@ -18,6 +18,7 @@ app.use(cors({
   ],
   credentials: true
 }));
+app.options("*", cors()); // ✅ ADD THIS LINE
 app.use(express.json());
 app.use(morgan("dev"));
 
