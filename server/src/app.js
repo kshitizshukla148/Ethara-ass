@@ -13,7 +13,8 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://ethara-ass.vercel.app"
+    "https://ethara-ass.vercel.app",
+    "https://ethara-ls0a5uvof-kshitizshukla148s-projects.vercel.app"
   ],
   credentials: true
 }));
