@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-global.crypto = crypto;
+
 
 const path = require("path");
 const dotenv = require("dotenv");
