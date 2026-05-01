@@ -10,16 +10,34 @@ const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://ethara-ass.vercel.app",
-    "https://ethara-ls0a5uvof-kshitizshukla148s-projects.vercel.app"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "https://ethara-ass.vercel.app",
+  "https://ethara-ls0a5uvof-kshitizshukla148s-projects.vercel.app",
+  ...(process.env.CLIENT_URLS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL.trim()] : []),
+]);
+
+const isAllowedVercelPreview = (origin) =>
+  /^https:\/\/ethara-ass(?:-[a-z0-9-]+)?\.vercel\.app$/i.test(origin);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow non-browser clients (no Origin header), local dev, and configured frontends.
+      if (!origin || allowedOrigins.has(origin) || isAllowedVercelPreview(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(morgan("dev"));
