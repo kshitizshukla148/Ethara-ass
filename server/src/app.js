@@ -16,6 +16,8 @@ app.use(cors({
     "https://ethara-ass.vercel.app",
     "https://ethara-ls0a5uvof-kshitizshukla148s-projects.vercel.app"
   ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 app.options("*", cors()); // ✅ ADD THIS LINE
