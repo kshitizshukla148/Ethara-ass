@@ -3,6 +3,7 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const api = axios.create({ baseURL: API_BASE_URL });
+const navItems = ["Overview", "Projects", "Tasks", "Members"];
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || "");
@@ -25,6 +26,13 @@ function App() {
   const [error, setError] = useState("");
 
   const isAdmin = useMemo(() => user?.role === "admin", [user]);
+  const dashboardLabelMap = {
+    total: "Total",
+    todo: "Todo",
+    inProgress: "In Progress",
+    done: "Done",
+    overdue: "Overdue",
+  };
 
   const logout = useCallback(() => {
     setToken("");
@@ -124,21 +132,54 @@ function App() {
     return (
       <div className="auth-shell">
         <div className="card auth-card fade-in">
-          <h1>Team Task Manager</h1>
-          <p className="muted">{authMode === "login" ? "Login to continue" : "Create your account"}</p>
+          <div className="auth-heading">
+            <h1>Team Task Manager</h1>
+            <p className="muted">
+              {authMode === "login" ? "Welcome back. Please login." : "Create your account"}
+            </p>
+          </div>
           {error && <p className="error">{error}</p>}
           <form onSubmit={handleAuth} className="grid">
             {authMode === "signup" && (
               <>
-                <input placeholder="Name" value={authForm.name} onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })} required />
-                <select value={authForm.role} onChange={(e) => setAuthForm({ ...authForm, role: e.target.value })}>
-                  <option value="member">Member</option>
-                  <option value="admin">Admin</option>
-                </select>
+                <div className="field">
+                  <label>Name</label>
+                  <input
+                    placeholder="Enter full name"
+                    value={authForm.name}
+                    onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="field">
+                  <label>Role</label>
+                  <select value={authForm.role} onChange={(e) => setAuthForm({ ...authForm, role: e.target.value })}>
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
               </>
             )}
-            <input type="email" placeholder="Email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} required />
-            <input type="password" placeholder="Password" value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} required />
+            <div className="field">
+              <label>Email</label>
+              <input
+                type="email"
+                placeholder="name@company.com"
+                value={authForm.email}
+                onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
+                required
+              />
+            </div>
+            <div className="field">
+              <label>Password</label>
+              <input
+                type="password"
+                placeholder="Minimum 6 characters"
+                value={authForm.password}
+                onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
+                required
+              />
+            </div>
             <button type="submit">{authMode === "login" ? "Login" : "Sign up"}</button>
           </form>
           <button className="secondary" onClick={() => setAuthMode(authMode === "login" ? "signup" : "login")}>
@@ -150,100 +191,204 @@ function App() {
   }
 
   return (
-    <main className="layout">
-      <section className="header-row card fade-in">
-        <div>
-          <h1>Team Task Manager</h1>
-          <p className="muted">Logged in as <strong>{user?.name}</strong> ({user?.role})</p>
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="sidebar-brand">
+          <span className="brand-dot" />
+          <h2>Team Task Manager</h2>
         </div>
-        <button onClick={logout}>Logout</button>
-      </section>
-
-      {error && <p className="error">{error}</p>}
-
-      {dashboard && (
-        <section className="grid grid-5">
-          {Object.entries(dashboard).map(([key, value], index) => (
-            <article className="card stat-card fade-in-up" style={{ animationDelay: `${index * 80}ms` }} key={key}>
-              <h3>{key}</h3>
-              <p>{value}</p>
-            </article>
+        <nav className="sidebar-nav">
+          {navItems.map((item) => (
+            <button key={item} className="nav-item" type="button">
+              {item}
+            </button>
           ))}
-        </section>
-      )}
+        </nav>
+        <div className="sidebar-footer muted">
+          Role: <strong>{user?.role}</strong>
+        </div>
+      </aside>
 
-      {isAdmin && (
-        <section className="card fade-in-up">
-          <h2>Create Project (Admin)</h2>
-          <form className="grid" onSubmit={createProject}>
-            <input placeholder="Project name" value={projectForm.name} onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })} required />
-            <input placeholder="Description" value={projectForm.description} onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })} />
-            <input placeholder="Member emails (comma-separated)" value={projectForm.members} onChange={(e) => setProjectForm({ ...projectForm, members: e.target.value })} />
-            <button type="submit">Create Project</button>
-          </form>
+      <main className="content-area">
+        <section className="header-row card fade-in">
+          <div>
+            <h1>Dashboard</h1>
+            <p className="muted">
+              Logged in as <strong>{user?.name}</strong> ({user?.role})
+            </p>
+          </div>
+          <button onClick={logout}>Logout</button>
         </section>
-      )}
 
-      {isAdmin ? (
-        <section className="card fade-in-up">
-          <h2>Create Task</h2>
-          <form className="grid" onSubmit={createTask}>
-            <input placeholder="Task title" value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} required />
-            <input placeholder="Description" value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} />
-            <select value={taskForm.project} onChange={(e) => setTaskForm({ ...taskForm, project: e.target.value })} required>
-              <option value="">Select project</option>
-              {projects.map((project) => (
-                <option value={project._id} key={project._id}>{project.name}</option>
-              ))}
-            </select>
-            <select value={taskForm.assignedTo} onChange={(e) => setTaskForm({ ...taskForm, assignedTo: e.target.value })} required>
-              <option value="">Assign to</option>
-              {users.map((member) => (
-                <option value={member._id} key={member._id}>{member.name} ({member.role})</option>
-              ))}
-            </select>
-            <input type="date" value={taskForm.dueDate} onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })} required />
-            <select value={taskForm.status} onChange={(e) => setTaskForm({ ...taskForm, status: e.target.value })}>
-              <option value="todo">Todo</option>
-              <option value="in-progress">In Progress</option>
-              <option value="done">Done</option>
-            </select>
-            <button type="submit">Create Task</button>
-          </form>
-        </section>
-      ) : (
-        <section className="card fade-in-up">
-          <h2>Member Panel</h2>
-          <p className="muted">
-            Tasks are assigned by admins. You can update your task status from the list below.
-          </p>
-        </section>
-      )}
+        {error && <p className="error">{error}</p>}
 
-      <section className="card fade-in-up">
-        <h2>Tasks</h2>
-        <div className="task-list">
-          {tasks.map((task) => (
-            <article key={task._id} className="task-item">
-              <div>
-                <h3>{task.title}</h3>
-                <p>{task.description || "No description"}</p>
-                <p>Project: {task.project?.name}</p>
-                <p>Assigned To: {task.assignedTo?.name}</p>
-                <p>Due: {new Date(task.dueDate).toLocaleDateString()}</p>
-                <span className={`status-chip status-${task.status}`}>{task.status}</span>
+        {dashboard && (
+          <section className="grid grid-5">
+            {Object.entries(dashboard).map(([key, value], index) => (
+              <article className="card stat-card fade-in-up" style={{ animationDelay: `${index * 80}ms` }} key={key}>
+                <h3>{dashboardLabelMap[key] || key}</h3>
+                <p>{value}</p>
+              </article>
+            ))}
+          </section>
+        )}
+
+        {isAdmin && (
+          <section className="card fade-in-up">
+            <h2>Create Project</h2>
+            <form className="grid" onSubmit={createProject}>
+              <div className="field">
+                <label>Project Name</label>
+                <input
+                  placeholder="Enter project name"
+                  value={projectForm.name}
+                  onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })}
+                  required
+                />
               </div>
-              <select value={task.status} onChange={(e) => updateTaskStatus(task._id, e.target.value)}>
-                <option value="todo">Todo</option>
-                <option value="in-progress">In Progress</option>
-                <option value="done">Done</option>
-              </select>
-            </article>
-          ))}
-          {tasks.length === 0 && <p>No tasks yet.</p>}
-        </div>
-      </section>
-    </main>
+              <div className="field">
+                <label>Description</label>
+                <input
+                  placeholder="Optional details"
+                  value={projectForm.description}
+                  onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                />
+              </div>
+              <div className="field">
+                <label>Member Emails</label>
+                <input
+                  placeholder="Comma-separated emails"
+                  value={projectForm.members}
+                  onChange={(e) => setProjectForm({ ...projectForm, members: e.target.value })}
+                />
+              </div>
+              <button type="submit">Create Project</button>
+            </form>
+          </section>
+        )}
+
+        <section className="card fade-in-up">
+          <div className="section-head">
+            <h2>Projects</h2>
+            <span className="muted">{projects.length} total</span>
+          </div>
+          <div className="project-list">
+            {projects.map((project) => (
+              <article key={project._id} className="project-card">
+                <h3>{project.name}</h3>
+                <p>{project.description || "No description"}</p>
+                <div className="project-meta muted">
+                  <span>Members: {project.members?.length || 0}</span>
+                  <span>Owner: {project.createdBy?.name || "N/A"}</span>
+                </div>
+              </article>
+            ))}
+            {projects.length === 0 && <p className="muted">No projects found.</p>}
+          </div>
+        </section>
+
+        {isAdmin ? (
+          <section className="card fade-in-up">
+            <h2>Create Task</h2>
+            <form className="grid grid-2" onSubmit={createTask}>
+              <div className="field full">
+                <label>Task Title</label>
+                <input
+                  placeholder="Enter task title"
+                  value={taskForm.title}
+                  onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="field full">
+                <label>Description</label>
+                <input
+                  placeholder="Optional details"
+                  value={taskForm.description}
+                  onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
+                />
+              </div>
+              <div className="field">
+                <label>Project</label>
+                <select value={taskForm.project} onChange={(e) => setTaskForm({ ...taskForm, project: e.target.value })} required>
+                  <option value="">Select project</option>
+                  {projects.map((project) => (
+                    <option value={project._id} key={project._id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>Assign To</label>
+                <select value={taskForm.assignedTo} onChange={(e) => setTaskForm({ ...taskForm, assignedTo: e.target.value })} required>
+                  <option value="">Select member</option>
+                  {users.map((member) => (
+                    <option value={member._id} key={member._id}>
+                      {member.name} ({member.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>Due Date</label>
+                <input type="date" value={taskForm.dueDate} onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })} required />
+              </div>
+              <div className="field">
+                <label>Status</label>
+                <select value={taskForm.status} onChange={(e) => setTaskForm({ ...taskForm, status: e.target.value })}>
+                  <option value="todo">Todo</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+              <button type="submit" className="full">
+                Create Task
+              </button>
+            </form>
+          </section>
+        ) : (
+          <section className="card fade-in-up">
+            <h2>Member Panel</h2>
+            <p className="muted">
+              Tasks are assigned by admins. You can update your task status from the list below.
+            </p>
+          </section>
+        )}
+
+        <section className="card fade-in-up">
+          <div className="section-head">
+            <h2>Tasks</h2>
+            <span className="muted">{tasks.length} total</span>
+          </div>
+          <div className="task-list">
+            {tasks.map((task) => (
+              <article key={task._id} className="task-item">
+                <div>
+                  <h3>{task.title}</h3>
+                  <p>{task.description || "No description"}</p>
+                  <div className="task-meta">
+                    <p>Project: {task.project?.name}</p>
+                    <p>Assigned To: {task.assignedTo?.name}</p>
+                    <p>Due: {new Date(task.dueDate).toLocaleDateString()}</p>
+                  </div>
+                  <span className={`status-chip status-${task.status}`}>{task.status}</span>
+                </div>
+                <div className="task-actions">
+                  <label>Status</label>
+                  <select value={task.status} onChange={(e) => updateTaskStatus(task._id, e.target.value)}>
+                    <option value="todo">Todo</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="done">Done</option>
+                  </select>
+                </div>
+              </article>
+            ))}
+            {tasks.length === 0 && <p className="muted">No tasks yet.</p>}
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }
 
