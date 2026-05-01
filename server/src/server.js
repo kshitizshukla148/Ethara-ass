@@ -16,7 +16,7 @@ app.use(cors({
   credentials: true
 }));
 
-app.options("*", cors());
+
 
 // ✅ PORT
 const PORT = process.env.PORT || 8080;
