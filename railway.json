@@ -3,7 +3,6 @@
       "builder": "NIXPACKS"
     },
     "deploy": {
-      "startCommand": "npm start",
-      "rootDirectory": "server"
+      "startCommand": "node src/server.js"
     }
   }
