@@ -1,8 +1,9 @@
 {
     "build": {
-      "builder": "NIXPACKS"
+      "builder": "NIXPACKS",
+      "buildCommand": "npm install --prefix server && npm install --prefix client && npm run build --prefix client"
     },
     "deploy": {
-      "startCommand": "node src/server.js"
+      "startCommand": "npm start --prefix server"
     }
   }

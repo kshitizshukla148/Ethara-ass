@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const fs = require("fs");
+const path = require("path");
 
 const authRoutes = require("./routes/authRoutes");
 const projectRoutes = require("./routes/projectRoutes");
@@ -42,7 +44,7 @@ app.use(
 app.use(express.json());
 app.use(morgan("dev"));
 
-app.get("/", (_req, res) => {
+app.get("/api", (_req, res) => {
   res.json({ message: "Team Task Manager API is running" });
 });
 
@@ -54,6 +56,16 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+
+const clientDistPath = path.resolve(__dirname, "../../client/dist");
+const clientIndexPath = path.join(clientDistPath, "index.html");
+
+if (fs.existsSync(clientIndexPath)) {
+  app.use(express.static(clientDistPath));
+  app.get(/^(?!\/api|\/health).*/, (_req, res) => {
+    res.sendFile(clientIndexPath);
+  });
+}
 
 app.use(notFound);
 app.use(errorHandler);

@@ -143,14 +143,10 @@ Ops:
 
 ## Railway Deployment
 
-Deploy as two services:
+Deploy as one service from the repository root:
 
-1. Backend (`server`)
-   - Build: `npm install`
-   - Start: `npm start`
-   - Variables: `PORT`, `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL`
+- Build: `npm run build`
+- Start: `npm start`
+- Variables: `PORT`, `MONGO_URI`, `JWT_SECRET`
 
-2. Frontend (`client`)
-   - Build: `npm install && npm run build`
-   - Start: `npm run preview -- --host 0.0.0.0 --port $PORT`
-   - Variables: `VITE_API_URL=<backend-url>/api`
+The Express server serves the built React app from `client/dist`, and the client calls the API through same-origin `/api` routes.
