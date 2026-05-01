@@ -1,4 +1,4 @@
-import crypto from "crypto";
+const crypto = require("crypto");
 global.crypto = crypto;
 
 const path = require("path");

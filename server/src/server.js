@@ -8,7 +8,11 @@ connectDB();
 
 // ✅ CORS FIRST
 app.use(cors({
-  origin: "https://ethara-ass.vercel.app",
+  origin: [
+    "http://localhost:5173",
+    "https://ethara-ass.vercel.app",
+    "https://ethara-ass-kshitizshukla148s-projects.vercel.app"
+  ],
   credentials: true
 }));
 
